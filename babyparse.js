@@ -37,13 +37,14 @@
 	Baby.DefaultDelimiter = ",";		// Used if not specified and detection fails
 	Baby.Parser = Parser;				// For testing/dev only
 	Baby.ParserHandle = ParserHandle;	// For testing/dev only
-	
-	var fs = fs || require('fs')
-	
+
+	var fs = fs || require('fs'),
+		results = null;
+
 	function ParseFiles(_input, _config)
 	{
 		if (Array.isArray(_input)) {
-			var results = [];
+			results = [];
 			_input.forEach(function(input) {
 				if(typeof input === 'object')
 					results.push(ParseFiles(input.file, input.config));
@@ -52,7 +53,7 @@
 			});
 			return results;
 		} else {
-			var results = {
+			results = {
 				data: [],
 				errors: []
 			};
@@ -117,8 +118,7 @@
 			if (_input.data instanceof Array)
 			{
 				if (!_input.fields)
-					_input.fields = _input.data[0] instanceof Array
-									? _input.fields
+					_input.fields = (_input.data[0] instanceof Array) ? _input.fields
 									: objectKeys(_input.data[0]);
 
 				if (!(_input.data[0] instanceof Array) && typeof _input.data[0] !== 'object')
@@ -137,15 +137,12 @@
 			if (typeof _config !== 'object')
 				return;
 
-			if (typeof _config.delimiter === 'string'
-				&& _config.delimiter.length == 1
-				&& Baby.BAD_DELIMITERS.indexOf(_config.delimiter) == -1)
+			if (typeof _config.delimiter === 'string' && _config.delimiter.length == 1 && Baby.BAD_DELIMITERS.indexOf(_config.delimiter) == -1)
 			{
 				_delimiter = _config.delimiter;
 			}
 
-			if (typeof _config.quotes === 'boolean'
-				|| _config.quotes instanceof Array)
+			if (typeof _config.quotes === 'boolean' || _config.quotes instanceof Array)
 				_quotes = _config.quotes;
 
 			if (typeof _config.newline === 'string')
@@ -218,12 +215,7 @@
 
 			str = str.toString().replace(/"/g, '""');
 
-			var needsQuotes = (typeof _quotes === 'boolean' && _quotes)
-							|| (_quotes instanceof Array && _quotes[col])
-							|| hasAny(str, Baby.BAD_DELIMITERS)
-							|| str.indexOf(_delimiter) > -1
-							|| str.charAt(0) == ' '
-							|| str.charAt(str.length - 1) == ' ';
+			var needsQuotes = (typeof _quotes === 'boolean' && _quotes) || (_quotes instanceof Array && _quotes[col]) || hasAny(str, Baby.BAD_DELIMITERS) || str.indexOf(_delimiter) > -1 || str.charAt(0) == ' ' || str.charAt(str.length - 1) == ' ';
 
 			return needsQuotes ? '"' + str + '"' : str;
 		}
@@ -275,8 +267,9 @@
 					processResults();
 
 					// It's possbile that this line was empty and there's no row here after all
-					if (_results.data.length == 0)
+					if (_results.data.length === 0) {
 						return;
+					}
 
 					_stepCounter += results.data.length;
 					if (_config.preview && _stepCounter > _config.preview)
@@ -359,8 +352,9 @@
 			if (_config.skipEmptyLines)
 			{
 				for (var i = 0; i < _results.data.length; i++)
-					if (_results.data[i].length == 1 && _results.data[i][0] == "")
+					if (_results.data[i].length === 1 && _results.data[i][0] === "") {
 						_results.data.splice(i--, 1);
+					}
 			}
 
 			if (needsHeaderRow())
@@ -371,7 +365,7 @@
 
 		function needsHeaderRow()
 		{
-			return _config.header && _fields.length == 0;
+			return _config.header && _fields.length === 0;
 		}
 
 		function fillHeaderFields()
@@ -410,9 +404,10 @@
 					{
 						if (j >= _fields.length)
 						{
-							if (!row["__parsed_extra"])
-								row["__parsed_extra"] = [];
-							row["__parsed_extra"].push(_results.data[i][j]);
+							if (!row.__parsed_extra) {
+								row.__parsed_extra = [];
+							}
+							row.__parsed_extra.push(_results.data[i][j]);
 						}
 						else
 							row[_fields[j]] = _results.data[i][j];
@@ -469,8 +464,7 @@
 
 				avgFieldCount /= preview.data.length;
 
-				if ((typeof bestDelta === 'undefined' || delta < bestDelta)
-					&& avgFieldCount > 1.99)
+				if ((typeof bestDelta === 'undefined' || delta < bestDelta) && avgFieldCount > 1.99)
 				{
 					bestDelta = delta;
 					bestDelim = delim;
@@ -482,7 +476,7 @@
 			return {
 				successful: !!bestDelim,
 				bestDelimiter: bestDelim
-			}
+			};
 		}
 
 		function guessLineEndings(input)
@@ -539,23 +533,25 @@
 		var fastMode = config.fastMode;
 
 		// Delimiter must be valid
-		if (typeof delim !== 'string'
-			|| delim.length != 1
-			|| Baby.BAD_DELIMITERS.indexOf(delim) > -1)
+		if (typeof delim !== 'string' || delim.length !== 1 || Baby.BAD_DELIMITERS.indexOf(delim) > -1) {
 			delim = ",";
+		}
 
 		// Comment character must be valid
-		if (comments === delim)
+		if (comments === delim) {
 			throw "Comment character same as delimiter";
-		else if (comments === true)
+		}
+		else if (comments === true) {
 			comments = "#";
-		else if (typeof comments !== 'string'
-			|| Baby.BAD_DELIMITERS.indexOf(comments) > -1)
+		}
+		else if (typeof comments !== 'string' || Baby.BAD_DELIMITERS.indexOf(comments) > -1) {
 			comments = false;
+		}
 
 		// Newline must be valid: \r, \n, or \r\n
-		if (newline != '\n' && newline != '\r' && newline != '\r\n')
+		if (newline != '\n' && newline != '\r' && newline != '\r\n') {
 			newline = '\n';
+		}
 
 		// We're gonna need these at the Parser scope
 		var cursor = 0;
@@ -626,7 +622,7 @@
 					for (;;)
 					{
 						// Find closing quote
-						var quoteSearch = input.indexOf('"', quoteSearch+1);
+						quoteSearch = input.indexOf('"', quoteSearch+1);
 
 						if (quoteSearch === -1)
 						{
@@ -681,7 +677,7 @@
 								if (aborted)
 									return returnable();
 							}
-							
+
 							if (preview && data.length >= preview)
 								return returnable(true);
 
@@ -781,7 +777,7 @@
 			function doStep()
 			{
 				step(returnable());
-				data = [], errors = [];
+				return data = [], errors = [];
 			}
 		};
 
@@ -804,52 +800,60 @@
 	// Replaces bad config values with good, default ones
 	function copyAndValidateConfig(origConfig)
 	{
-		if (typeof origConfig !== 'object')
+		if (typeof origConfig !== 'object') {
 			origConfig = {};
+		}
 
 		var config = copy(origConfig);
 
-		if (typeof config.delimiter !== 'string'
-			|| config.delimiter.length != 1
-			|| Baby.BAD_DELIMITERS.indexOf(config.delimiter) > -1)
+		if (typeof config.delimiter !== 'string' || config.delimiter.length !== 1 || Baby.BAD_DELIMITERS.indexOf(config.delimiter) > -1) {
 			config.delimiter = DEFAULTS.delimiter;
+		}
 
-		if (config.newline != '\n'
-			&& config.newline != '\r'
-			&& config.newline != '\r\n')
+		if (config.newline !== '\n' && config.newline !== '\r' && config.newline !== '\r\n') {
 			config.newline = DEFAULTS.newline;
+		}
 
-		if (typeof config.header !== 'boolean')
+		if (typeof config.header !== 'boolean') {
 			config.header = DEFAULTS.header;
+		}
 
-		if (typeof config.dynamicTyping !== 'boolean')
+		if (typeof config.dynamicTyping !== 'boolean') {
 			config.dynamicTyping = DEFAULTS.dynamicTyping;
+		}
 
-		if (typeof config.preview !== 'number')
+		if (typeof config.preview !== 'number') {
 			config.preview = DEFAULTS.preview;
+		}
 
-		if (typeof config.step !== 'function')
+		if (typeof config.step !== 'function') {
 			config.step = DEFAULTS.step;
+		}
 
-		if (typeof config.complete !== 'function')
+		if (typeof config.complete !== 'function') {
 			config.complete = DEFAULTS.complete;
+		}
 
-		if (typeof config.skipEmptyLines !== 'boolean')
+		if (typeof config.skipEmptyLines !== 'boolean') {
 			config.skipEmptyLines = DEFAULTS.skipEmptyLines;
+		}
 
-		if (typeof config.fastMode !== 'boolean')
+		if (typeof config.fastMode !== 'boolean') {
 			config.fastMode = DEFAULTS.fastMode;
+		}
 
 		return config;
 	}
 
 	function copy(obj)
 	{
-		if (typeof obj !== 'object')
+		if (typeof obj !== 'object') {
 			return obj;
+		}
 		var cpy = obj instanceof Array ? [] : {};
-		for (var key in obj)
+		for (var key in obj) {
 			cpy[key] = copy(obj[key]);
+		}
 		return cpy;
 	}
 
@@ -877,5 +881,7 @@
 	else {
 		global.Baby = Baby;
 	}
+
+	exports.Baby = Baby;
 
 })(typeof window !== 'undefined' ? window : this);
